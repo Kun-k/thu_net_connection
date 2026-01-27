@@ -1,0 +1,4 @@
+host="auth.tsinghua.edu.cn"
+campus_postfix="@tsinghua"
+campus_url="https://www.tsinghua.edu.cn/"
+acid="-1"
