@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import getpass
 import json
 from cryptography.fernet import Fernet
@@ -165,4 +167,3 @@ class EncryptCred:
 if __name__ == "__main__":
     encrypt_cred = EncryptCred()
     config = encrypt_cred.run()
-

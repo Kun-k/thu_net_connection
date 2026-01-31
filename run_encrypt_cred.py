@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from encrypt_cred import EncryptCred
 
 

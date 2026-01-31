@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import subprocess
 import socket
 import shlex
@@ -9,6 +11,7 @@ from email.header import Header
 import email.utils
 from logger import get_logger
 from encrypt_cred import EncryptCred
+import os
 
 
 class AutoLogin:
@@ -104,10 +107,11 @@ class AutoLogin:
     def connect_network(self):
         self.logger.info("尝试连接网络")
         while True:
-            subprocess.call(["~/auth-client", "-u", self.UserName, "-p", self.PassWord, "auth"])
+            auth_client_path = os.path.expanduser("~/auth-client")
+            subprocess.call([auth_client_path, "-u", self.UserName, "-p", self.PassWord, "auth"])
+            time.sleep(10)
             if self.check_network():
                 break
-            time.sleep(10)
 
     def send_email(self, subject, content):
         """

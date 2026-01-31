@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from auto_login import AutoLogin
 from encrypt_cred import EncryptCred
 
