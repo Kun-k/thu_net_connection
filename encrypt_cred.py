@@ -166,4 +166,8 @@ class EncryptCred:
 
 if __name__ == "__main__":
     encrypt_cred = EncryptCred()
-    config = encrypt_cred.run()
+    # config = encrypt_cred.run()
+    _, result = encrypt_cred.load_cred(".rk.encrypted_cred")
+    print(result)
+    _, result = encrypt_cred.load_cred(".rk_1.encrypted_cred")
+    print(result)

@@ -9,13 +9,6 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
-      <webServer id="94b06e3b-7711-4f2b-8e83-b2467707f38e" name="niu">
-        <fileTransfer accessType="SFTP" host="166.111.73.130" port="83" sshConfigId="366e5823-5cbc-4612-9e1f-a7283cc0f25b" sshConfig="rk@166.111.73.130:83 agent" authAgent="true">
-          <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
-          </advancedOptions>
-        </fileTransfer>
-      </webServer>
     </option>
   </component>
 </project>

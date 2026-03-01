@@ -157,11 +157,11 @@ class AutoLogin:
         email_content_start = "时间: %s \n %s \n当前IP信息: %s" % (curr_time, start_info, ip_info)
 
         if self.send_email(email_subject_start, email_content_start):
-            send_reconnect_info_flag = False
+            send_start_info_flag = False
         else:
-            send_reconnect_info_flag = True
+            send_start_info_flag = True
 
-        send_start_info_flag = False
+        send_reconnect_info_flag = False
         email_subject = ""
         email_content = ""
 
@@ -175,6 +175,7 @@ class AutoLogin:
                 self.logger.info("当前IP信息: %s " % ip_info)
 
                 email_subject = "校园网自动登陆程序-网络重连"
+                curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 email_content = "时间: %s \n %s \n当前IP信息: %s" % (curr_time, connect_info, ip_info)
 
             if send_start_info_flag:
@@ -182,7 +183,6 @@ class AutoLogin:
                     send_start_info_flag = False
 
             if send_reconnect_info_flag:
-                curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 if self.send_email(email_subject, email_content):
                     send_reconnect_info_flag = False
 
