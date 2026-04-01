@@ -33,6 +33,8 @@ class AutoLogin:
         self.EmailSmtpServer = config["EmailSmtpServer"]
         self.EmailSmtpPort = config["EmailSmtpPort"]
 
+        self.ServerName = input("服务器名称；")
+
     def check_network(self):
         host = self.ping_host_list[self.ping_host_idx]
         self.ping_host_idx += 1
@@ -154,7 +156,7 @@ class AutoLogin:
 
         curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         email_subject_start = "校园网自动登陆程序-程序启动"
-        email_content_start = "时间: %s \n %s \n当前IP信息: %s" % (curr_time, start_info, ip_info)
+        email_content_start = "时间: %s \n%s \n服务器名称: %s \n当前IP信息: %s" % (curr_time, start_info, self.ServerName, ip_info)
 
         if self.send_email(email_subject_start, email_content_start):
             send_start_info_flag = False
@@ -176,7 +178,7 @@ class AutoLogin:
 
                 email_subject = "校园网自动登陆程序-网络重连"
                 curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                email_content = "时间: %s \n %s \n当前IP信息: %s" % (curr_time, connect_info, ip_info)
+                email_content = "时间: %s \n%s \n服务器名称: %s \n当前IP信息: %s" % (curr_time, connect_info, self.ServerName, ip_info)
 
             if send_start_info_flag:
                 if self.send_email(email_subject_start, email_content_start):
