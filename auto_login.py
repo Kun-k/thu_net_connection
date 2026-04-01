@@ -32,8 +32,7 @@ class AutoLogin:
         self.CheckInterval = config["CheckInterval"]
         self.EmailSmtpServer = config["EmailSmtpServer"]
         self.EmailSmtpPort = config["EmailSmtpPort"]
-
-        self.ServerName = input("服务器名称；")
+        self.ServerName = config["ServerName"]
 
     def check_network(self):
         host = self.ping_host_list[self.ping_host_idx]
