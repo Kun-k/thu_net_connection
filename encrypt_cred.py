@@ -87,6 +87,7 @@ class EncryptCred:
 
         # 交互式输入凭证（此时有终端，可正常用getpass）
         ConfigName = input("配置名称 ConfigName: ").strip()
+        ServerName = input("服务器名称 ServerName: ").strip()
         UserName = input("校园网账户用户名 UserName: ").strip()
         PassWord = getpass.getpass("校园网账户密码 PassWord: ").strip()
         CheckInterval = input("检查间隔 CheckInterval (单位为秒，默认120): ").strip()
@@ -115,6 +116,7 @@ class EncryptCred:
 
         data = {
             "ConfigName": ConfigName,
+            "ServerName": ServerName,
             "UserName": enc_UserName,
             "PassWord": enc_PassWord,
             "CheckInterval": CheckInterval,
@@ -152,6 +154,7 @@ class EncryptCred:
 
         config_decode = {
             "ConfigName": config["ConfigName"],
+            "ServerName": config["ServerName"],
             "UserName": fernet.decrypt(config["UserName"].encode()).decode(),
             "PassWord": fernet.decrypt(config["PassWord"].encode()).decode(),
             "CheckInterval": int(config["CheckInterval"]),
