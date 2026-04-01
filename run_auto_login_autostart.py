@@ -12,3 +12,4 @@ if __name__ == "__main__":
     config = EncryptCred.load_cred(ConfigFileName)
     if config[0]:
         auto_login = AutoLogin(config[1])
+        auto_login.run()

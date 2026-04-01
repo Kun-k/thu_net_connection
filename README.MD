@@ -41,18 +41,55 @@ SmtpServer,         邮箱SMTP服务器，默认为smtp.qq.com（QQ邮箱）
 SmtpPort,           邮箱SMTP服务器端口，默认为465（QQ邮箱）
 ```
 
+# 3. 配置程序自启动
+
 如果希望配置程序自启动，需要首先执行脚本`sh_run_encrypt_cred_autostart.sh`, 选择或生成一组用于自启动的配置信息:
 ```bash
 ./sh_run_encrypt_cred_autostart.sh
 ```
 
-然后将脚本`sh_run_auto_login_autostart.sh`设置为自启动脚本: (TODO)
-```bash
+然后将脚本`sh_run_auto_login_autostart.sh`设置为自启动脚本：
 
+1. 编辑脚本`sh_run_auto_login_autostart.sh`，进行python环境配置，选择一个python路径。
+
+2. 创建service文件:
+```bash
+sudo vim /etc/systemd/system/auto_login.service
+```
+写入内容：
+```ini
+[Unit]
+Description=Auto Login Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=path to [sh_run_auto_login_autostart.sh]
+Restart=always
+User=你的用户名
+WorkingDirectory=项目目录
+[Install]
+WantedBy=multi-user.target
 ```
 
+3. 启动服务:
+```bash
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl start auto_login.service
+```
 
-# 3. 登出校园网
+4. 设置开机自启:
+```bash
+sudo systemctl enable auto_login.service
+```
+
+5. 查看服务状态:
+```bash
+sudo systemctl status auto_login.service
+```
+
+# 4. 登出校园网
 
 如果之前执行过自动登陆程序，则首先退出程序:
 ```bash
