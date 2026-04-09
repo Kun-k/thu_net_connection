@@ -89,6 +89,11 @@ sudo systemctl enable auto_login.service
 sudo systemctl status auto_login.service
 ```
 
+6. 关闭服务:
+```bash
+sudo systemctl stop auto_login.service
+```
+
 # 4. 登出校园网
 
 如果之前执行过自动登陆程序，则首先退出程序:
