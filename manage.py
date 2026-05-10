@@ -68,7 +68,7 @@ def try_copy_to_clipboard(text):
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             if p.returncode == 0:
                 return True, cmd[0]
-        except FileNotFoundError:
+        except (FileNotFoundError, NotADirectoryError, PermissionError):
             continue
     return False, None
 
