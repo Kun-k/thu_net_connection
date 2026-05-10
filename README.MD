@@ -1,3 +1,16 @@
+# 一键管理工具
+
+一键完成下面所有步骤（设置文件权限、凭证管理、自启动服务、浏览器查看），推荐方式：
+
+```bash
+pip install -r requirements.txt
+python manage.py
+```
+
+详细说明（终端菜单、浏览器面板、API、故障排查等）见 **[docs/manage_tool_guide.md](docs/manage_tool_guide.md)**。
+
+---
+
 # 0. 设置文件权限
 
 首先将auth-client和.auth-setting文件放到用户目录下:

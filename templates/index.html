@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>校园网自动登陆 - 管理面板</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root { --primary: #2c6bed; --bg: #f5f6f8; --card: #fff; --border: #e3e5ea;
+            --text: #222; --muted: #888; --danger: #c0392b; --ok: #27ae60; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+           background: var(--bg); margin: 0; color: var(--text); }
+    header { background: var(--primary); color: #fff; padding: 14px 24px;
+             display: flex; align-items: center; justify-content: space-between; }
+    header h1 { margin: 0; font-size: 17px; font-weight: 500; }
+    header form { margin: 0; }
+    header button { background: rgba(255,255,255,.2); color: #fff; border: 1px solid rgba(255,255,255,.4);
+                    padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+    nav { background: #fff; border-bottom: 1px solid var(--border); padding: 0 24px;
+          display: flex; gap: 4px; }
+    nav button { background: transparent; border: none; padding: 12px 16px; font-size: 14px;
+                 color: #555; cursor: pointer; border-bottom: 2px solid transparent; }
+    nav button.on { color: var(--primary); border-bottom-color: var(--primary); }
+    main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+    .panel { display: none; }
+    .panel.on { display: block; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .card { background: var(--card); border-radius: 8px; padding: 16px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+    .card h2 { margin: 0 0 6px; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .card .v { font-size: 18px; font-weight: 500; word-break: break-all; }
+    .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 13px; color: #fff; }
+    .badge.active { background: var(--ok); }
+    .badge.inactive, .badge.failed, .badge.unknown { background: var(--danger); }
+    .badge.not-installed { background: #888; }
+    .log-box { background: #1e1e1e; color: #ddd; font-family: Consolas, Menlo, monospace;
+               font-size: 12px; padding: 14px; border-radius: 8px; height: 320px;
+               overflow: auto; white-space: pre-wrap; margin-top: 18px; }
+    .meta { font-size: 12px; color: var(--muted); margin: 8px 0; }
+
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px;
+            overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { background: #fafbfd; color: #555; font-weight: 500; font-size: 13px; }
+    tr:last-child td { border-bottom: none; }
+    .btn { padding: 5px 10px; border: 1px solid var(--border); border-radius: 4px;
+           background: #fff; cursor: pointer; font-size: 13px; margin-right: 4px; }
+    .btn:hover { background: #f5f7fa; }
+    .btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn.primary:hover { background: #1f57c9; }
+    .btn.danger { color: var(--danger); border-color: #f0c4c0; }
+    .btn.danger:hover { background: #fdf3f2; }
+    .btn.ok { color: var(--ok); border-color: #b9e2c8; }
+    .btn.ok:hover { background: #f1faf4; }
+
+    .toolbar { margin-bottom: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,.4);
+             display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal.on { display: flex; }
+    .modal .box { background: #fff; border-radius: 10px; padding: 22px 26px;
+                  width: 520px; max-width: calc(100vw - 32px); max-height: 90vh; overflow: auto; }
+    .modal h3 { margin: 0 0 16px; font-size: 16px; }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 12px; color: #555; margin-bottom: 3px; }
+    .field input { width: 100%; padding: 7px 9px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .pill { display: inline-block; padding: 2px 8px; font-size: 12px; border-radius: 10px;
+            background: #fff5d6; color: #946a00; margin-left: 6px; }
+    .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+             background: #333; color: #fff; padding: 9px 18px; border-radius: 22px;
+             font-size: 13px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    .toast.on { opacity: .92; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>校园网自动登陆 · 管理面板</h1>
+  <form method="POST" action="/logout"><button type="submit">退出</button></form>
+</header>
+
+<nav>
+  <button class="on" data-tab="status">状态</button>
+  <button data-tab="creds">凭证管理</button>
+  <button data-tab="service">服务控制</button>
+</nav>
+
+<main>
+  <!-- 状态 -->
+  <section class="panel on" id="panel-status">
+    <div class="grid">
+      <div class="card"><h2>服务状态</h2><div class="v"><span id="state" class="badge unknown">--</span></div></div>
+      <div class="card"><h2>使用凭证</h2><div class="v" id="encrypt">--</div></div>
+      <div class="card"><h2>本机 IP</h2><div class="v" id="local_ip">--</div></div>
+      <div class="card"><h2>公网 IP</h2><div class="v" id="public_ip">--</div></div>
+    </div>
+    <div class="meta">数据每 5 秒自动刷新 · <span id="updated">--</span></div>
+    <div class="log-box" id="log">加载日志...</div>
+  </section>
+
+  <!-- 凭证管理 -->
+  <section class="panel" id="panel-creds">
+    <div class="toolbar">
+      <button class="btn primary" id="btn-add">+ 新建凭证</button>
+      <span class="meta" id="creds-meta"></span>
+    </div>
+    <table>
+      <thead><tr><th>文件名</th><th>ConfigName</th><th>状态</th><th style="width:280px">操作</th></tr></thead>
+      <tbody id="creds-tbody"><tr><td colspan="4" class="meta">加载中...</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- 服务控制 -->
+  <section class="panel" id="panel-service">
+    <div class="card" style="margin-bottom:14px">
+      <h2>当前状态</h2>
+      <div class="v"><span id="svc-state" class="badge unknown">--</span> · 凭证: <span id="svc-cred">--</span></div>
+    </div>
+    <div class="card">
+      <h2>启动服务</h2>
+      <div class="field" style="margin-top:10px">
+        <label>选择凭证</label>
+        <select id="svc-select" style="width:100%;padding:7px 9px;border:1px solid #ccc;border-radius:5px"></select>
+      </div>
+      <div class="actions" style="justify-content:flex-start">
+        <button class="btn ok" id="btn-start">启动 + 开机自启</button>
+        <button class="btn danger" id="btn-stop">停止 + 取消自启</button>
+      </div>
+      <div class="hint">注: 服务启停需要 sudo 权限, 首次会在运行 manage.py 的终端中弹出密码提示。</div>
+    </div>
+  </section>
+</main>
+
+<!-- 凭证表单弹窗 -->
+<div class="modal" id="modal-cred">
+  <div class="box">
+    <h3 id="cred-title">新建凭证</h3>
+    <div class="field"><label>ConfigName *</label><input id="f-ConfigName" /></div>
+    <div class="field"><label>ServerName</label><input id="f-ServerName" /></div>
+    <div class="field"><label>UserName *</label><input id="f-UserName" /></div>
+    <div class="field"><label>PassWord <span id="pw-hint" class="hint" style="display:none">（编辑时留空保留原值）</span></label><input id="f-PassWord" type="password" /></div>
+    <div class="field"><label>CheckInterval (秒)</label><input id="f-CheckInterval" placeholder="120" /></div>
+    <div class="field"><label>EmailAddress</label><input id="f-EmailAddress" /></div>
+    <div class="field"><label>EmailAuthCode <span id="ec-hint" class="hint" style="display:none">（编辑时留空保留原值）</span></label><input id="f-EmailAuthCode" type="password" /></div>
+    <div class="field"><label>EmailSmtpServer</label><input id="f-EmailSmtpServer" placeholder="smtp.qq.com" /></div>
+    <div class="field"><label>EmailSmtpPort</label><input id="f-EmailSmtpPort" placeholder="465" /></div>
+    <div class="field"><label>PythonPath</label><input id="f-PythonPath" placeholder="python" /></div>
+    <div class="actions">
+      <button class="btn" id="cred-cancel">取消</button>
+      <button class="btn primary" id="cred-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 查看凭证弹窗 -->
+<div class="modal" id="modal-view">
+  <div class="box">
+    <h3>凭证详情</h3>
+    <div class="hint">将显示账户/邮箱等敏感字段。</div>
+    <pre id="view-body" style="background:#f7f9fc;padding:12px;border-radius:6px;font-size:13px;overflow:auto;max-height:400px"></pre>
+    <div class="actions"><button class="btn" id="view-close">关闭</button></div>
+  </div>
+</div>
+
+<!-- 冲突选择弹窗 -->
+<div class="modal" id="modal-conflict">
+  <div class="box">
+    <h3 id="conflict-title">凭证正被使用</h3>
+    <div id="conflict-body" class="meta" style="margin-bottom:12px"></div>
+    <div id="conflict-actions" class="actions" style="flex-direction:column;align-items:stretch;gap:8px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 2200);
+}
+
+async function api(method, url, body) {
+  const opts = { method, headers: {} };
+  if (body !== undefined) {
+    opts.headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(body);
+  }
+  const r = await fetch(url, opts);
+  if (r.status === 401) { location.href = "/login"; throw new Error("auth"); }
+  let data = null;
+  try { data = await r.json(); } catch (e) {}
+  return { ok: r.ok, status: r.status, data };
+}
+
+// --- Tabs ---
+$$("nav button").forEach(b => b.addEventListener("click", () => {
+  $$("nav button").forEach(x => x.classList.remove("on"));
+  $$(".panel").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  $("#panel-" + b.dataset.tab).classList.add("on");
+  if (b.dataset.tab === "creds" || b.dataset.tab === "service") loadCreds();
+}));
+
+// --- Status ---
+async function refreshStatus() {
+  try {
+    const { data } = await api("GET", "/api/status");
+    const s = $("#state");
+    s.textContent = data.service_state || "--";
+    s.className = "badge " + (data.service_state || "unknown");
+    $("#encrypt").textContent = data.encrypt || "(未设置)";
+    $("#local_ip").textContent = data.local_ip || "(未知)";
+    $("#public_ip").textContent = data.public_ip || "(未知)";
+    const log = $("#log");
+    log.textContent = data.log_tail || "(无日志)";
+    log.scrollTop = log.scrollHeight;
+    $("#updated").textContent = "更新时间 " + new Date().toLocaleTimeString();
+  } catch (e) {
+    if (e.message !== "auth") $("#updated").textContent = "刷新失败: " + e;
+  }
+}
+refreshStatus();
+setInterval(refreshStatus, 5000);
+
+// --- Creds ---
+let credsCache = { creds: [], service_state: "", active_cred: null };
+
+async function loadCreds() {
+  const { data } = await api("GET", "/api/creds");
+  credsCache = data;
+
+  // 表格
+  const tb = $("#creds-tbody");
+  if (!data.creds.length) {
+    tb.innerHTML = `<tr><td colspan="4" class="meta">暂无凭证, 点击「新建凭证」添加。</td></tr>`;
+  } else {
+    tb.innerHTML = data.creds.map(c => `
+      <tr>
+        <td>${c.filename}</td>
+        <td>${c.config_name}${c.in_use ? '<span class="pill">使用中</span>' : ""}</td>
+        <td>${c.in_use ? "运行中" : "-"}</td>
+        <td>
+          <button class="btn" data-act="view" data-name="${c.filename}">查看</button>
+          <button class="btn" data-act="edit" data-name="${c.filename}">编辑</button>
+          <button class="btn danger" data-act="del" data-name="${c.filename}">删除</button>
+        </td>
+      </tr>`).join("");
+  }
+  $("#creds-meta").textContent = `共 ${data.creds.length} 个凭证 · 服务状态: ${data.service_state}`;
+
+  // 服务面板
+  const ss = $("#svc-state");
+  ss.textContent = data.service_state || "--";
+  ss.className = "badge " + (data.service_state || "unknown");
+  $("#svc-cred").textContent = data.active_cred || "(未设置)";
+  const sel = $("#svc-select");
+  sel.innerHTML = data.creds.map(c => `<option value="${c.filename}">${c.filename}</option>`).join("");
+  if (data.active_cred) sel.value = data.active_cred;
+}
+
+$("#creds-tbody").addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const name = btn.dataset.name;
+  const act = btn.dataset.act;
+  if (act === "view") return viewCred(name);
+  if (act === "edit") return editCred(name);
+  if (act === "del") return deleteCred(name);
+});
+
+// --- 表单 ---
+function clearForm() {
+  ["ConfigName","ServerName","UserName","PassWord","CheckInterval","EmailAddress",
+   "EmailAuthCode","EmailSmtpServer","EmailSmtpPort","PythonPath"]
+    .forEach(k => $("#f-" + k).value = "");
+}
+function fillForm(cfg) {
+  $("#f-ConfigName").value = cfg.ConfigName || "";
+  $("#f-ServerName").value = cfg.ServerName || "";
+  $("#f-UserName").value = cfg.UserName || "";
+  $("#f-PassWord").value = "";
+  $("#f-CheckInterval").value = cfg.CheckInterval || "";
+  $("#f-EmailAddress").value = cfg.EmailAddress || "";
+  $("#f-EmailAuthCode").value = "";
+  $("#f-EmailSmtpServer").value = cfg.EmailSmtpServer || "";
+  $("#f-EmailSmtpPort").value = cfg.EmailSmtpPort || "";
+  $("#f-PythonPath").value = cfg.PythonPath || "";
+}
+function readForm() {
+  return {
+    ConfigName: $("#f-ConfigName").value.trim(),
+    ServerName: $("#f-ServerName").value.trim(),
+    UserName: $("#f-UserName").value.trim(),
+    PassWord: $("#f-PassWord").value,
+    CheckInterval: $("#f-CheckInterval").value.trim(),
+    EmailAddress: $("#f-EmailAddress").value.trim(),
+    EmailAuthCode: $("#f-EmailAuthCode").value,
+    EmailSmtpServer: $("#f-EmailSmtpServer").value.trim(),
+    EmailSmtpPort: $("#f-EmailSmtpPort").value.trim(),
+    PythonPath: $("#f-PythonPath").value.trim(),
+  };
+}
+
+let editingName = null;
+
+$("#btn-add").addEventListener("click", () => {
+  editingName = null;
+  $("#cred-title").textContent = "新建凭证";
+  $("#pw-hint").style.display = "none";
+  $("#ec-hint").style.display = "none";
+  $("#f-ConfigName").disabled = false;
+  clearForm();
+  $("#modal-cred").classList.add("on");
+});
+
+async function editCred(name) {
+  const r = await api("GET", "/api/creds/" + encodeURIComponent(name));
+  if (!r.ok) { toast("加载失败"); return; }
+  editingName = name;
+  $("#cred-title").textContent = "编辑凭证 " + name;
+  $("#pw-hint").style.display = "";
+  $("#ec-hint").style.display = "";
+  $("#f-ConfigName").disabled = true;
+  fillForm(r.data);
+  $("#modal-cred").classList.add("on");
+}
+
+$("#cred-cancel").addEventListener("click", () => $("#modal-cred").classList.remove("on"));
+
+$("#cred-save").addEventListener("click", async () => {
+  const data = readForm();
+  if (!editingName) {
+    if (!data.ConfigName) { toast("ConfigName 不能为空"); return; }
+    const r = await api("POST", "/api/creds", data);
+    if (r.ok) { toast("已创建"); $("#modal-cred").classList.remove("on"); loadCreds(); }
+    else toast("创建失败: " + (r.data && r.data.detail || ""));
+  } else {
+    const target = credsCache.creds.find(c => c.filename === editingName);
+    const inUse = target && target.in_use;
+    if (inUse) {
+      $("#modal-cred").classList.remove("on");
+      askConflict("编辑", editingName, async (action) => {
+        const body = { ...data, _action: action };
+        const r = await api("PUT", "/api/creds/" + encodeURIComponent(editingName), body);
+        if (r.ok) { toast("已保存"); loadCreds(); } else toast("保存失败");
+      }, ["nothing","restart","stop"]);
+    } else {
+      const r = await api("PUT", "/api/creds/" + encodeURIComponent(editingName), data);
+      if (r.ok) { toast("已保存"); $("#modal-cred").classList.remove("on"); loadCreds(); }
+      else toast("保存失败");
+    }
+  }
+});
+
+async function viewCred(name) {
+  if (!confirm(`将显示 ${name} 的账户/邮箱等敏感信息, 确认查看?`)) return;
+  const r = await api("GET", "/api/creds/" + encodeURIComponent(name));
+  if (!r.ok) { toast("加载失败"); return; }
+  $("#view-body").textContent = JSON.stringify(r.data, null, 2);
+  $("#modal-view").classList.add("on");
+}
+$("#view-close").addEventListener("click", () => $("#modal-view").classList.remove("on"));
+
+async function deleteCred(name) {
+  const target = credsCache.creds.find(c => c.filename === name);
+  if (target && target.in_use) {
+    askConflict("删除", name, async (action) => {
+      const r = await api("DELETE", "/api/creds/" + encodeURIComponent(name) + "?action=" + action);
+      if (r.ok) { toast("已删除"); loadCreds(); } else toast("删除失败");
+    }, ["stop","keep"]);
+    return;
+  }
+  if (!confirm(`确认删除 ${name}?`)) return;
+  const r = await api("DELETE", "/api/creds/" + encodeURIComponent(name));
+  if (r.ok) { toast("已删除"); loadCreds(); } else toast("删除失败");
+}
+
+// --- 冲突弹窗 ---
+const CONFLICT_LABELS = {
+  // 编辑
+  nothing: "保存修改但不重启服务（当前 encrypt 已被写入后台）",
+  restart: "保存修改并重启服务",
+  stop: "保存/删除并终止服务",
+  // 删除特有
+  keep: "删除文件但保留服务运行",
+};
+
+function askConflict(opName, credName, cb, allow) {
+  $("#conflict-title").textContent = `${opName} - ${credName} 正被运行的服务使用`;
+  $("#conflict-body").textContent = `请选择处理方式:`;
+  const box = $("#conflict-actions");
+  box.innerHTML = "";
+  allow.forEach(act => {
+    const b = document.createElement("button");
+    b.className = "btn";
+    b.textContent = CONFLICT_LABELS[act] || act;
+    b.onclick = () => { $("#modal-conflict").classList.remove("on"); cb(act); };
+    box.appendChild(b);
+  });
+  const cancel = document.createElement("button");
+  cancel.className = "btn";
+  cancel.textContent = "取消";
+  cancel.onclick = () => $("#modal-conflict").classList.remove("on");
+  box.appendChild(cancel);
+  $("#modal-conflict").classList.add("on");
+}
+
+// --- 服务控制 ---
+$("#btn-start").addEventListener("click", async () => {
+  const cred = $("#svc-select").value;
+  if (!cred) { toast("请先选择凭证"); return; }
+  if (!confirm(`使用凭证 ${cred} 启动服务并设置开机自启?`)) return;
+  toast("正在启动...");
+  const r = await api("POST", "/api/service/start", { cred_name: cred });
+  if (r.ok) { toast("已启动"); loadCreds(); refreshStatus(); }
+  else toast("失败: " + (r.data && r.data.msg));
+});
+
+$("#btn-stop").addEventListener("click", async () => {
+  if (!confirm("确认停止服务并取消开机自启?")) return;
+  toast("正在停止...");
+  const r = await api("POST", "/api/service/stop");
+  if (r.ok) { toast("已停止"); loadCreds(); refreshStatus(); }
+  else toast("失败: " + (r.data && r.data.msg));
+});
+</script>
+</body>
+</html>
